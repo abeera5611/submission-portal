@@ -1,0 +1,6 @@
+__pycache__/
+.venv/
+.idea/
+submissions.json
+report.json
+test-report.json
