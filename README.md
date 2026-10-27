@@ -1,6 +1,6 @@
 # Assignment Submission Portal
 
-A simple Flask app where students submit their name, registration number, assignment title and a submission URL. Every push is tested automatically by GitHub Actions, and the test report is sent to a local receiver that saves it as `test-report.json`.
+A simple Flask app where students submit their name, registration number, assignment title and a submission URL. Every push is tested automatically by GitHub Actions (running on a self-hosted runner on my own PC), and the test report is sent to a local receiver that saves it as `test-report.json`.
 
 ## Requirements
 - Python 3.10+
@@ -15,11 +15,11 @@ pip install -r requirements.txt
 ```
 python app.py
 ```
-Open http://localhost:5000, fill in the form and submit. Valid submissions are saved to `submissions.json` and shown in the table below the form.
+Open http://localhost:5000, fill in the form and submit. Valid submissions are saved to `submissions.json` and shown in the table below the form. Missing fields or an invalid URL are rejected with a validation message and are not saved.
 
 ## Run the tests
 ```
-pytest
+python -m pytest
 ```
 This runs three tests (valid submission, missing registration number, invalid URL) and writes `report.json` in the project folder.
 
@@ -27,28 +27,29 @@ This runs three tests (valid submission, missing registration number, invalid UR
 ```
 python receiver.py
 ```
-The receiver listens on port 8000 and saves every report it receives to `test-report.json`.
+The receiver listens on `http://localhost:8000` and saves every report it receives to `test-report.json`. Keep it running during the demo.
 
-Keep it running during the demo. To let GitHub Actions reach it:
+## Start the self-hosted CI runner
+The CI runs on a GitHub Actions self-hosted runner on this computer, so the runner's `localhost` is the same machine as the receiver (no tunnel needed).
 
-1. In a second terminal, start a tunnel:
+1. In the GitHub repo go to Settings > Actions > Runners > New self-hosted runner (Windows) and follow the download and `config.cmd` steps once.
+2. Start the runner and keep the window open during the demo:
    ```
-   cloudflared tunnel --url http://localhost:8000
+   cd C:\actions-runner
+   ./run.cmd
    ```
-   (or `ngrok http 8000`)
-2. Copy the public URL the tunnel prints.
-3. In the GitHub repo go to Settings > Secrets and variables > Actions and add:
-   - `RECEIVER_URL`: the tunnel URL
-   - `REPORT_TOKEN`: the same token used by `receiver.py` (default is `secret`; set the `REPORT_TOKEN` environment variable to change it)
-
-Quick tunnel URLs change on every restart, so update `RECEIVER_URL` before each demo.
+   It should print `Listening for Jobs`.
+3. In Settings > Secrets and variables > Actions add:
+   - `RECEIVER_URL` = `http://localhost:8000`
+   - `REPORT_TOKEN` = `secret` (must match the receiver's token; set the `REPORT_TOKEN` environment variable to change it)
 
 ## CI pipeline
 `.github/workflows/ci.yml` runs on every push:
-1. Installs dependencies
-2. Runs `pytest` (generates `report.json` from the real test results)
-3. Sends `report.json` to the receiver, for passing and failing runs
-4. Fails the pipeline if any test failed
+1. Checks out the pushed revision
+2. Installs dependencies
+3. Runs `python -m pytest` (generates `report.json` from the real test results)
+4. Sends `report.json` to the receiver, for both passing and failing runs
+5. Fails the pipeline if any test failed
 
 ## Report format
 `test-report.json` contains: repository, branch, commit SHA, run ID, timestamp, each test's name/result/failure message, total/passed/failed counts, and the overall status.
@@ -65,4 +66,4 @@ receiver.py         Local HTTP receiver, saves test-report.json
 .github/workflows/  CI pipeline
 ```
 
-Repository: https://github.com/<your-username>/submission-portal
+Repository: https://github.com/abeera5611/submission-portal
