@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Assignment Submission Portal</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 30px auto; padding: 0 15px; }
+    label { display: block; margin-top: 10px; }
+    input { width: 100%; padding: 6px; box-sizing: border-box; }
+    button { margin-top: 15px; padding: 8px 16px; }
+    .errors { background: #fde8e8; color: #a00; padding: 10px; margin-top: 15px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Assignment Submission Portal</h1>
+
+  <form method="POST" action="/">
+    <label>Name <input type="text" name="name"></label>
+    <label>Registration Number <input type="text" name="reg_no"></label>
+    <label>Assignment Title <input type="text" name="title"></label>
+    <label>Submission URL <input type="text" name="url"></label>
+    <button type="submit">Submit</button>
+  </form>
+
+  {% if errors %}
+  <div class="errors">
+    <ul>
+      {% for e in errors %}
+      <li>{{ e }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <h2>Saved Submissions</h2>
+  <table>
+    <tr><th>Name</th><th>Reg No</th><th>Title</th><th>URL</th></tr>
+    {% for s in submissions %}
+    <tr>
+      <td>{{ s.name }}</td>
+      <td>{{ s.reg_no }}</td>
+      <td>{{ s.title }}</td>
+      <td><a href="{{ s.url }}">{{ s.url }}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
