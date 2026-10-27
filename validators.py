@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 
 def validate(data):
     errors = []
-    for f in ("name", "title", "url"):
+    for f in ("name", "reg_no", "title", "url"):
         if not data.get(f, "").strip():
             errors.append(f"{f} is required")
     u = urlparse(data.get("url", "").strip())
