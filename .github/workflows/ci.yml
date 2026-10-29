@@ -37,4 +37,28 @@ jobs:
           password: ${{ secrets.MAIL_APP_PASSWORD }}
           to: ${{ secrets.REPORT_EMAIL }}
           from: CI Bot
-          subject: "CI ${{
+          subject: 'CI ${{ steps.tests.outcome }} - ${{ github.sha }}'
+          body: file://email_body.txt
+          attachments: report.json
+
+      - name: Fail the pipeline if tests failed
+        if: steps.tests.outcome == 'failure'
+        run: exit 1
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deployment
+        uses: actions/deploy-pages@v4
