@@ -4,3 +4,4 @@ __pycache__/
 submissions.json
 report.json
 test-report.json
+email_body.txt

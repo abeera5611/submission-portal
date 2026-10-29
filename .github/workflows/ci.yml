@@ -23,6 +23,18 @@ jobs:
           RECEIVER_URL: ${{ secrets.RECEIVER_URL }}
           REPORT_TOKEN: ${{ secrets.REPORT_TOKEN }}
 
-      - name: Fail the pipeline if tests failed
-        if: steps.tests.outcome == 'failure'
-        run: exit 1
+      - name: Build email summary
+        if: always()
+        run: python make_summary.py
+
+      - name: Email report
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USER }}
+          password: ${{ secrets.MAIL_APP_PASSWORD }}
+          to: ${{ secrets.REPORT_EMAIL }}
+          from: CI Bot
+          subject: "CI ${{

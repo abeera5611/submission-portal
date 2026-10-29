@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assignment Submission Portal (Demo)</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 30px auto; padding: 0 15px; }
+    label { display: block; margin-top: 10px; }
+    input { width: 100%; padding: 6px; box-sizing: border-box; }
+    button { margin-top: 15px; padding: 8px 16px; }
+    .errors { background: #fde8e8; color: #a00; padding: 10px; margin-top: 15px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Assignment Submission Portal</h1>
+  <p><em>Static demo: submissions are stored in your browser only.</em></p>
+  <form id="f">
+    <label>Name <input name="name"></label>
+    <label>Registration Number <input name="reg_no"></label>
+    <label>Assignment Title <input name="title"></label>
+    <label>Submission URL <input name="url"></label>
+    <button type="submit">Submit</button>
+  </form>
+  <div id="errors"></div>
+  <h2>Saved Submissions</h2>
+  <table><thead><tr><th>Name</th><th>Reg No</th><th>Title</th><th>URL</th></tr></thead><tbody id="rows"></tbody></table>
+
+<script>
+const KEY = "submissions";
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } };
+const save = (v) => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} };
+
+function validate(d) {
+  const errors = [];
+  for (const f of ["name", "reg_no", "title", "url"])
+    if (!d[f].trim()) errors.push(f + " is required");
+  if (d.url.trim()) {
+    try {
+      const u = new URL(d.url.trim());
+      if (!["http:", "https:"].includes(u.protocol)) throw 0;
+    } catch (e) { errors.push("Invalid submission URL"); }
+  }
+  return errors;
+}
+
+function render() {
+  const tb = document.getElementById("rows");
+  tb.innerHTML = "";
+  for (const s of load()) {
+    const tr = document.createElement("tr");
+    for (const k of ["name", "reg_no", "title", "url"]) {
+      const td = document.createElement("td");
+      td.textContent = s[k];
+      tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  }
+}
+
+document.getElementById("f").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(e.target));
+  const errs = validate(d);
+  const box = document.getElementById("errors");
+  box.innerHTML = "";
+  if (errs.length) {
+    box.className = "errors";
+    box.textContent = errs.join(" | ");
+    return;
+  }
+  box.className = "";
+  const items = load();
+  items.push({ name: d.name.trim(), reg_no: d.reg_no.trim(), title: d.title.trim(), url: d.url.trim() });
+  save(items);
+  e.target.reset();
+  render();
+});
+render();
+</script>
+</body>
+</html>
